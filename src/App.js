@@ -8,9 +8,9 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [alert, setAlert] = useState({
-    show: true,
-    msg: "hello world",
-    type: "success",
+    show: false,
+    msg: "",
+    type: "",
   });
 
   const showAlert = (show = false, msg = "", type = "") => {
@@ -22,7 +22,18 @@ function App() {
     if (!name) {
       showAlert(true, "Please Enter Values", "danger");
     } else if (name && isEditing) {
-      //edit
+      showAlert(true, "Edited successfully", "success");
+      setList(
+        list.map((item) => {
+          if (editId === item.id) {
+            return { ...item, title: name };
+          }
+          return item;
+        })
+      );
+      setName("");
+      setEditId(null);
+      setIsEditing(false);
     } else {
       const newItem = { id: new Date().getTime().toString(), title: name };
       showAlert(true, "Item added successfully into the cart", "success");
@@ -32,18 +43,30 @@ function App() {
   };
 
   const clearList = () => {
-    showAlert(true, "empty list", "danger")
+    showAlert(true, "empty list", "danger");
     setList([]);
-  }
+  };
 
-  // const removeItem = () => {
+  const removeItem = (id) => {
+    showAlert(true, "item removed successfully from the cart", "danger");
+    setList(
+      list.filter((item) => {
+        return item.id !== id;
+      })
+    );
+  };
 
-  // }
+  const editItem = (id) => {
+    const editEl = list.find((item) => item.id === id);
+    setIsEditing(true);
+    setEditId(id);
+    setName(editEl.title);
+  };
 
   return (
     <section className="section-center">
       <form className="grocery-form" onSubmit={handleSubmit}>
-        {alert.show && <Alert {...alert} removeAlert={showAlert} />}{" "}
+        {alert.show && <Alert {...alert} removeAlert={showAlert} list={list} />}
         {/*conditional rendering */}
         <h3>grocery bud</h3>
         <div className="form-control">
@@ -61,7 +84,7 @@ function App() {
       </form>
       {list.length > 0 && (
         <div className="grocery-container">
-          <List items={list} />
+          <List items={list} editItem={editItem} removeItem={removeItem} />
           <button onClick={clearList} className="clear-btn">
             Clear Items
           </button>
